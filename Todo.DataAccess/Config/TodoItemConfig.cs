@@ -15,6 +15,7 @@ namespace Todo.DataAccess.Config
             builder.Property(t=>t.Description).HasMaxLength(150);
             builder.Property(t=> t.IsCompleted).HasDefaultValue(false);
             builder.Property(t=> t.IsImportant).HasDefaultValue(false);
+            builder.Property(t=> t.IsTasked).HasDefaultValue(true); 
             builder.Property(t => t.CreatedAt).HasDefaultValue(DateTime.Now);
 
             builder.HasOne(l => l.TodoList) //model name you want to connet to

@@ -16,26 +16,43 @@ namespace TodoBackend.Controllers
             _todoDBContext = todoDBContext;
         }
 
+        // GET: TodoItems
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoItem>> GetAllTodos()
+        public async Task<ActionResult<TodoItem>> GetAllTodosTitle()
         {
-            var getAll = await _todoDBContext.todoItems.ToListAsync();
+            var getAll = await _todoDBContext.todoItems.Select(i=> new { id = i.Id ,Title = i.Title }).ToListAsync();
 
-            if (getAll == null) return NotFound("No Data Found");
+            if (getAll.Count == 0) return NotFound("No Data Found");
 
             return Ok(getAll);
         }
 
+        // GET: TodoItems
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<TodoItem>> GetOneTodo(int id)
+        {
+            if (id == 0) return BadRequest("Id cannot be empty");
+            var SingleTodoItem = await _todoDBContext.todoItems.Where(i => i.Id == id).FirstOrDefaultAsync();
+
+            if (SingleTodoItem == null) return NotFound("No Data Found");
+
+            return Ok(SingleTodoItem);
+        }
+
+        // POST: TodoItems/createitem
         [HttpPost]
         [Route("createitem")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-
         public async Task<ActionResult<TodoItem>> CreateTodo(TodoItem todoItem)
         {
             if (todoItem == null) return BadRequest("Fields Cannot be empty");
@@ -47,13 +64,13 @@ namespace TodoBackend.Controllers
             return Created();
         }
 
+        // PUT: TodoItems/updateitem
         [HttpPut]
         [Route("updateitem")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-
         public async Task<ActionResult<TodoItem>> UpdateTodo(TodoItem todoItem)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -68,6 +85,7 @@ namespace TodoBackend.Controllers
             return NoContent();
         }
 
+        // PATCH: TodoItems/:id
         [HttpPatch("{id:int}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -110,6 +128,7 @@ namespace TodoBackend.Controllers
             
         }
 
+        // DELETE: TodoItems/:id
         [HttpDelete("{id:int}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]

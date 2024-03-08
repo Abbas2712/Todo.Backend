@@ -13,8 +13,9 @@ namespace Todo.Models
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; } 
         public DateTime UpdatedAt { get; set; }
-        public bool IsCompleted { get; set; } 
-        public bool IsImportant { get; set; }
+        public bool IsCompleted { get; set; } = false;
+        public bool IsImportant { get; set; } = false; 
+        public bool IsTasked { get; set; } = true;
         public int? ListId { get; set; }
         public virtual TodoList? TodoList { get; set; }
     }

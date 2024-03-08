@@ -12,8 +12,8 @@ using Todo.DataAccess.Data;
 namespace Todo.DataAccess.Migrations
 {
     [DbContext(typeof(TodoDBContext))]
-    [Migration("20240306173057_EditedTodoItemAndTodoList")]
-    partial class EditedTodoItemAndTodoList
+    [Migration("20240308102153_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,7 +36,7 @@ namespace Todo.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 3, 6, 23, 0, 56, 767, DateTimeKind.Local).AddTicks(1633));
+                        .HasDefaultValue(new DateTime(2024, 3, 8, 15, 51, 52, 922, DateTimeKind.Local).AddTicks(5738));
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -52,6 +52,11 @@ namespace Todo.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<bool>("IsTasked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<int?>("ListId")
                         .HasColumnType("int");
@@ -79,9 +84,17 @@ namespace Todo.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValue(new DateTime(2024, 3, 8, 15, 51, 52, 923, DateTimeKind.Local).AddTicks(9837));
+
                     b.Property<string>("ListName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

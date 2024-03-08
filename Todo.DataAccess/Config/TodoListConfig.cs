@@ -11,6 +11,7 @@ namespace Todo.DataAccess.Config
             builder.HasKey(l=> l.Id);
             builder.Property(l=> l.Id).UseIdentityColumn();
             builder.Property(l => l.ListName).IsRequired();
+            builder.Property(l => l.CreatedAt).HasDefaultValue(DateTime.Now);
         }
     }
 }

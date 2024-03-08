@@ -7,7 +7,7 @@ namespace TodoBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoListController : Controller
+    public class TodoListController : ControllerBase
     {
         protected readonly TodoDBContext _todoDBContext;
         public TodoListController(TodoDBContext todoDBContext)
@@ -32,13 +32,6 @@ namespace TodoBackend.Controllers
                 throw new Exception(ex.ToString());
             }
         }
-
-        // GET: TodoListController/Details/5
-        /**[HttpGet]
-        public async Task<ActionResult<TodoList>> GetTodoItems(int id)
-        {
-            return NoContent();
-        }**/
 
         // POST: TodoListController/Create
         [HttpPost]
@@ -76,20 +69,27 @@ namespace TodoBackend.Controllers
             {
                 return View();
             }
-        }
+        }*/
 
-        // POST: TodoListController/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, IFormCollection collection)
+        // POST: TodoList/:id
+        [HttpDelete("{id:int}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var deleteItem = _todoDBContext.todoLists.Where(_=> _.Id == id).FirstOrDefault();
+                if (deleteItem == null) return NotFound("Todo item not found");
+                _todoDBContext.todoLists.Remove(deleteItem);
+                await _todoDBContext.SaveChangesAsync();
+                return Ok();
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                throw new Exception(ex.ToString());
             }
-        }*/
+        }
     }
 }
