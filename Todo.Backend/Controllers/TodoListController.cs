@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Todo.DataAccess.Data;
 using Todo.Models;
+using Todo.Models.DTOS;
 
 namespace TodoBackend.Controllers
 {
@@ -10,16 +12,18 @@ namespace TodoBackend.Controllers
     public class TodoListController : ControllerBase
     {
         protected readonly TodoDBContext _todoDBContext;
-        public TodoListController(TodoDBContext todoDBContext)
+        private readonly IMapper _mapper;
+        public TodoListController(TodoDBContext todoDBContext, IMapper mapper)
         {
             _todoDBContext = todoDBContext;
+            _mapper = mapper;
         }
 
-        // GET: TodoListController
+        // GET: TodoList
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoList>> GetTodoLists()
+        public async Task<ActionResult<IEnumerable<TodoList>>> GetTodoLists()
         {
             try 
             {
@@ -33,20 +37,41 @@ namespace TodoBackend.Controllers
             }
         }
 
-        // POST: TodoListController/Create
-        [HttpPost]
-        [ProducesResponseType(201)]
+        // GET: TodoList/:id
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-
-        public async Task<ActionResult<TodoList>> CreateTodoList(TodoList todoList)
+        public async Task<ActionResult<TodoList>> GetOneTodoList(int id)
         {
             try
             {
-                if (todoList == null) return BadRequest("Fields cannot be empty");
+                if (id == 0) return BadRequest("Id cannot be empty");
+                var getOneList = await _todoDBContext.todoLists.Include(_=> _.Items).Where(_ => _.Id == id).FirstOrDefaultAsync();
+                if (getOneList == null) return NotFound($"The TodoList with id: {id} was not found");
+
+                return Ok(getOneList);
+            }
+            catch (Exception ex) { throw new Exception(ex.ToString()); }
+        }
+
+        // POST: TodoListController/Create
+        [HttpPost]
+        [Route("createlist")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<TodoListDTO>> CreateTodoList(TodoListDTO todoListDTO)
+        {
+            try
+            {
+                if (todoListDTO == null) return BadRequest("Fields cannot be empty");
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                await _todoDBContext.todoLists.AddAsync(todoList);
+                TodoList newTodoList = _mapper.Map<TodoList>(todoListDTO);
+
+                await _todoDBContext.todoLists.AddAsync(newTodoList);
                 await _todoDBContext.SaveChangesAsync();
 
                 return Created();
@@ -57,19 +82,28 @@ namespace TodoBackend.Controllers
             }
         }
 
-        // POST: TodoListController/Edit/5
-        /*[HttpPost]
-        public ActionResult Edit(int id, IFormCollection collection)
+        [HttpPut("{id:int}")]
+        [Route("updatelist")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult> UpdateTodoList(int id,TodoListDTO todoListDTO)
         {
-            try
+            try 
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }*/
+                if (!ModelState.IsValid) return BadRequest("Invalid Data or fields");
+                var listexists = await _todoDBContext.todoLists.Where(_ => _.Id == id).FirstOrDefaultAsync();
+                if (listexists == null) return NotFound("Todo list does not exists");
+
+                TodoList todoListToUpdate = _mapper.Map<TodoList>(todoListDTO);
+                todoListToUpdate.UpdatedAt = DateTime.Now;
+                _todoDBContext.todoLists.Update(todoListToUpdate);
+                await _todoDBContext.SaveChangesAsync();
+
+                return NoContent();
+            } catch (Exception ex) { throw new Exception(ex.ToString()); }
+        }
 
         // POST: TodoList/:id
         [HttpDelete("{id:int}")]

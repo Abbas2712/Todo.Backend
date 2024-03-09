@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Todo.DataAccess.Data;
 using Todo.Models;
+using Todo.Models.DTOS;
 
 namespace TodoBackend.Controllers
 {
@@ -11,9 +13,11 @@ namespace TodoBackend.Controllers
     public class TodoItemController : ControllerBase
     {
         protected readonly TodoDBContext _todoDBContext;
-        public TodoItemController(TodoDBContext todoDBContext)
+        private readonly IMapper _mapper;
+        public TodoItemController(TodoDBContext todoDBContext, IMapper mapper)
         {
             _todoDBContext = todoDBContext;
+            _mapper = mapper;
         }
 
         // GET: TodoItems
@@ -22,29 +26,51 @@ namespace TodoBackend.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoItem>> GetAllTodosTitle()
+        public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetAllTodosTitle()
         {
-            var getAll = await _todoDBContext.todoItems.Select(i=> new { id = i.Id ,Title = i.Title }).ToListAsync();
+            var getAll = await _todoDBContext.todoItems.ToListAsync();
 
-            if (getAll.Count == 0) return NotFound("No Data Found");
+            if (getAll.Count == 0) return NotFound("No Todo's Found");
 
-            return Ok(getAll);
+            var itemDTO = _mapper.Map<List<TodoItemDTO>>(getAll);
+
+            return Ok(itemDTO);
         }
 
-        // GET: TodoItems
+        // GET: TodoItems/Important
+        [HttpGet]
+        [Route("important")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetAllImportantTodosTitle()
+        {
+            var getAll = await _todoDBContext.todoItems.Where(_=> _.IsImportant == true).ToListAsync();
+
+            if (getAll.Count == 0) return NotFound("No Todo's Found");
+
+            var itemDTO = _mapper.Map<List<TodoItemDTO>>(getAll);
+
+            return Ok(itemDTO);
+        }
+
+        // GET: TodoItems/:id
         [HttpGet("{id:int}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoItem>> GetOneTodo(int id)
+        public async Task<ActionResult<TodoItemDTO>> GetOneTodo(int id)
         {
             if (id == 0) return BadRequest("Id cannot be empty");
             var SingleTodoItem = await _todoDBContext.todoItems.Where(i => i.Id == id).FirstOrDefaultAsync();
 
             if (SingleTodoItem == null) return NotFound("No Data Found");
 
-            return Ok(SingleTodoItem);
+            var SingleTodoItemDTO = _mapper.Map<TodoItemDTO>(SingleTodoItem);
+
+            return Ok(SingleTodoItemDTO);
         }
 
         // POST: TodoItems/createitem
@@ -53,11 +79,13 @@ namespace TodoBackend.Controllers
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoItem>> CreateTodo(TodoItem todoItem)
+        public async Task<ActionResult<TodoItemDTO>> CreateTodo(TodoItemDTO todoItemDTO)
         {
-            if (todoItem == null) return BadRequest("Fields Cannot be empty");
+            if (todoItemDTO == null) return BadRequest("Fields Cannot be empty");
 
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            TodoItem todoItem = _mapper.Map<TodoItem>(todoItemDTO);
 
             await _todoDBContext.AddAsync(todoItem);
             await _todoDBContext.SaveChangesAsync();
@@ -65,22 +93,24 @@ namespace TodoBackend.Controllers
         }
 
         // PUT: TodoItems/updateitem
-        [HttpPut]
+        [HttpPut("{id:int}")]
         [Route("updateitem")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoItem>> UpdateTodo(TodoItem todoItem)
+        public async Task<ActionResult<TodoItemDTO>> UpdateTodo(int id ,TodoItemDTO todoItemDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var oldtodoitem = await _todoDBContext.todoItems.AsNoTracking().Where(todo => todo.Id == todoItem.Id).FirstOrDefaultAsync();
+            var doesitemexists = await _todoDBContext.todoItems.AsNoTracking().Where(todo => todo.Id == id).FirstOrDefaultAsync();
 
-            if (oldtodoitem == null) return NotFound("Todo item not found");
+            if (doesitemexists == null) return NotFound("Todo item not found");
 
-            oldtodoitem.UpdatedAt = DateTime.Now;
-            _todoDBContext.todoItems.Update(todoItem);
+            TodoItem todoItemToUpdate = _mapper.Map<TodoItem>(todoItemDTO);
+            Console.WriteLine(DateTime.Now);
+            todoItemToUpdate.UpdatedAt = DateTime.Now;
+            _todoDBContext.todoItems.Update(todoItemToUpdate);
             await _todoDBContext.SaveChangesAsync();
             return NoContent();
         }
@@ -102,7 +132,8 @@ namespace TodoBackend.Controllers
                 patchDocument.ApplyTo(oldtodoitem, ModelState); // Applying the patchDocument data to todoitems data with model state to check the errors if any
 
                 if (!ModelState.IsValid) return BadRequest(ModelState);
-
+                Console.WriteLine(DateTime.Now);
+                oldtodoitem.UpdatedAt = DateTime.Now;
                 _todoDBContext.Update(oldtodoitem);
 
                 // saving todoitems in todolist 
@@ -114,6 +145,7 @@ namespace TodoBackend.Controllers
                     if (todolist != null)
                     {
                         _todoDBContext.Attach(todolist);
+                        todolist.UpdatedAt = DateTime.Now;
                         todolist.Items.Add(oldtodoitem);
                     }
                 }
@@ -134,7 +166,7 @@ namespace TodoBackend.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<TodoItem>> DeleteTodo(int id) 
+        public async Task<ActionResult> DeleteTodo(int id) 
          {
             if (id == 0) return BadRequest("id cannot be empty");
 

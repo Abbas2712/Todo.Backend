@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Todo.DataAccess.Data;
+using Todo.Models.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,9 @@ builder.Services.AddControllers().AddNewtonsoftJson(options => options.Serialize
 
 // connecting db string to application
 builder.Services.AddDbContext<TodoDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Adding AutoMapper to Application
+builder.Services.AddAutoMapper(typeof(AutoMapperConfig));
 
 var app = builder.Build();
 
