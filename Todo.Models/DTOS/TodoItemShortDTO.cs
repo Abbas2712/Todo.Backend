@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Todo.Models.DTOS
 {
-    public class TodoListDTO
+    public class TodoItemShortDTO
     {
         public int Id { get; set; }
-        [Required]
-        public string ListName { get; set; }
-        public List<TodoItemShortDTO> Items { get; set; }
+        public string Title { get; set; }
     }
-
 }

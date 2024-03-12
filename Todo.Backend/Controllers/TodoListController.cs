@@ -27,7 +27,12 @@ namespace TodoBackend.Controllers
         {
             try 
             {
-                var TodoLists = await _todoDBContext.todoLists.Include(l=>l.Items).ToListAsync();
+                var TodoLists = await _todoDBContext.todoLists.Select(item=>
+                new {
+                    item.Id,
+                    item.ListName,
+                    Items = item.Items.Select(item=> new { item.Id, item.Title })
+                }).ToListAsync();
                 if (TodoLists.Count == 0) return Ok("No TodoList Found");
                 return Ok(TodoLists);
             }
@@ -48,7 +53,8 @@ namespace TodoBackend.Controllers
             try
             {
                 if (id == 0) return BadRequest("Id cannot be empty");
-                var getOneList = await _todoDBContext.todoLists.Include(_=> _.Items).Where(_ => _.Id == id).FirstOrDefaultAsync();
+                var getOneList = await _todoDBContext.todoLists.Include(_=> _.Items)
+                    .Where(_ => _.Id == id).FirstOrDefaultAsync();
                 if (getOneList == null) return NotFound($"The TodoList with id: {id} was not found");
 
                 return Ok(getOneList);
@@ -82,8 +88,7 @@ namespace TodoBackend.Controllers
             }
         }
 
-        [HttpPut("{id:int}")]
-        [Route("updatelist")]
+        [HttpPut("updatelist/{id:int}")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
@@ -108,12 +113,14 @@ namespace TodoBackend.Controllers
         // POST: TodoList/:id
         [HttpDelete("{id:int}")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
         public async Task<ActionResult> Delete(int id)
         {
             try
             {
+                if (id == 0) return BadRequest("Id cannot be empty");
                 var deleteItem = _todoDBContext.todoLists.Where(_=> _.Id == id).FirstOrDefault();
                 if (deleteItem == null) return NotFound("Todo item not found");
                 _todoDBContext.todoLists.Remove(deleteItem);

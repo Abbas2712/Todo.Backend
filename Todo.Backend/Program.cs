@@ -18,6 +18,15 @@ builder.Services.AddDbContext<TodoDBContext>(options => options.UseSqlServer(bui
 // Adding AutoMapper to Application
 builder.Services.AddAutoMapper(typeof(AutoMapperConfig));
 
+// Adding CORS Policy to Application
+builder.Services.AddCors(options=> 
+{
+    options.AddPolicy(name: "Default", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000/").AllowAnyHeader().AllowAnyMethod();
+    });  
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

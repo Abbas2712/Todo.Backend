@@ -21,6 +21,8 @@ namespace Todo.Models.DTOS
         public bool IsCompleted { get; set; }
         [DefaultValue(false)]
         public bool IsImportant { get; set; }
+        [DefaultValue(false)]
+        public bool IsTodayTodo { get; set; }
         [DefaultValue(true)]
         public bool IsTasked { get; set; }
 

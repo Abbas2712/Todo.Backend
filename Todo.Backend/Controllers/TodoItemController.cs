@@ -92,9 +92,8 @@ namespace TodoBackend.Controllers
             return Created();
         }
 
-        // PUT: TodoItems/updateitem
-        [HttpPut("{id:int}")]
-        [Route("updateitem")]
+        // PUT: TodoItems/updateitem/:id
+        [HttpPut("updateitem/{id:int}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
@@ -108,7 +107,6 @@ namespace TodoBackend.Controllers
             if (doesitemexists == null) return NotFound("Todo item not found");
 
             TodoItem todoItemToUpdate = _mapper.Map<TodoItem>(todoItemDTO);
-            Console.WriteLine(DateTime.Now);
             todoItemToUpdate.UpdatedAt = DateTime.Now;
             _todoDBContext.todoItems.Update(todoItemToUpdate);
             await _todoDBContext.SaveChangesAsync();
@@ -132,7 +130,6 @@ namespace TodoBackend.Controllers
                 patchDocument.ApplyTo(oldtodoitem, ModelState); // Applying the patchDocument data to todoitems data with model state to check the errors if any
 
                 if (!ModelState.IsValid) return BadRequest(ModelState);
-                Console.WriteLine(DateTime.Now);
                 oldtodoitem.UpdatedAt = DateTime.Now;
                 _todoDBContext.Update(oldtodoitem);
 
