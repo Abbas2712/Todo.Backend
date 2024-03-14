@@ -11,20 +11,14 @@ namespace Todo.Models.DTOS
     public class TodoItemDTO
     {
         public int Id { get; set; }
-        [Required]
-        [MaxLength(80)]
         public string Title { get; set; }
-        [MaxLength(150)]
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; }
-        [DefaultValue(false)]
         public bool IsCompleted { get; set; }
-        [DefaultValue(false)]
         public bool IsImportant { get; set; }
-        [DefaultValue(false)]
         public bool IsTodayTodo { get; set; }
-        [DefaultValue(true)]
         public bool IsTasked { get; set; }
+        public int ListId { get; set; }
 
     }
 }

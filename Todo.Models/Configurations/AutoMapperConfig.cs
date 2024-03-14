@@ -22,12 +22,7 @@ namespace Todo.Models.Configurations
                 .ForMember(_ => _.IsImportant, opt => opt.MapFrom(_ => _.IsImportant))
                 .ForMember(_ => _.IsCompleted, opt => opt.MapFrom(_ => _.IsCompleted))
                 .ForMember(_ => _.IsTodayTodo, opt => opt.MapFrom(_ => _.IsTodayTodo))
-                .ReverseMap();
-
-            // Todo Item Short 
-            CreateMap<TodoItem, TodoItemShortDTO>()
-                .ForMember(_ => _.Id, opt => opt.MapFrom(_ => _.Id))
-                .ForMember(_ => _.Title, opt => opt.MapFrom(_ => _.Title))
+                .ForMember(_ => _.ListId, opt => opt.MapFrom(_ => _.ListId))
                 .ReverseMap();
 
             // TodoList

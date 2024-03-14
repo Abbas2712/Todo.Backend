@@ -30,8 +30,7 @@ namespace TodoBackend.Controllers
                 var TodoLists = await _todoDBContext.todoLists.Select(item=>
                 new {
                     item.Id,
-                    item.ListName,
-                    Items = item.Items.Select(item=> new { item.Id, item.Title })
+                    item.ListName
                 }).ToListAsync();
                 if (TodoLists.Count == 0) return Ok("No TodoList Found");
                 return Ok(TodoLists);
@@ -53,8 +52,21 @@ namespace TodoBackend.Controllers
             try
             {
                 if (id == 0) return BadRequest("Id cannot be empty");
-                var getOneList = await _todoDBContext.todoLists.Include(_=> _.Items)
-                    .Where(_ => _.Id == id).FirstOrDefaultAsync();
+                var getOneList = await _todoDBContext.todoLists.Select(item =>
+                new
+                {
+                    item.Id,
+                    item.ListName,
+                    Items = item.Items.Select(item => new
+                    {
+                        item.Id,
+                        item.Title,
+                        item.IsCompleted,
+                        item.IsImportant,
+                        item.IsTasked,
+                        item.IsTodayTodo
+                    })
+                }).Where(_ => _.Id == id).FirstOrDefaultAsync();
                 if (getOneList == null) return NotFound($"The TodoList with id: {id} was not found");
 
                 return Ok(getOneList);

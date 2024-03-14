@@ -11,13 +11,14 @@ namespace Todo.DataAccess.Config
             builder.ToTable("TodoItems");
             builder.HasKey(t => t.Id);
             builder.Property(t => t.Id).UseIdentityColumn();
-            builder.Property(t=> t.Title).HasMaxLength(80).IsRequired();
-            builder.Property(t=>t.Description).HasMaxLength(150);
-            builder.Property(t=> t.IsCompleted).HasDefaultValue(false);
-            builder.Property(t=> t.IsImportant).HasDefaultValue(false);
+            builder.Property(t => t.Title).HasMaxLength(80).IsRequired();
+            builder.Property(t => t.Description).HasMaxLength(150);
+            builder.Property(t => t.IsCompleted).HasDefaultValue(false);
+            builder.Property(t => t.IsImportant).HasDefaultValue(false);
             builder.Property(t => t.IsTodayTodo).HasDefaultValue(false);
-            builder.Property(t=> t.IsTasked).HasDefaultValue(true); 
             builder.Property(t => t.CreatedAt).HasDefaultValue(DateTime.Now);
+            builder.Property(t => t.ListId).HasDefaultValue(null);
+            builder.Property(t => t.IsTasked).HasDefaultValue(true);
 
             builder.HasOne(l => l.TodoList) //model name you want to connet to
                 .WithMany(i => i.Items) // attribute to which you want to connet to in other models table

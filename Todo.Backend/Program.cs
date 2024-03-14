@@ -23,7 +23,7 @@ builder.Services.AddCors(options=>
 {
     options.AddPolicy(name: "Default", policy =>
     {
-        policy.WithOrigins("http://localhost:3000/").AllowAnyHeader().AllowAnyMethod();
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });  
 });
 
@@ -37,6 +37,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("Default");
+app.UseAuthorization();
 app.MapControllers();
 app.Run();
 

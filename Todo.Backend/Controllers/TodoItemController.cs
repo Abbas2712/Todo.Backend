@@ -37,7 +37,7 @@ namespace TodoBackend.Controllers
             return Ok(itemDTO);
         }
 
-        // GET: TodoItems/Important
+        // GET: TodoItems/important
         [HttpGet]
         [Route("important")]
         [ProducesResponseType(200)]
@@ -55,6 +55,24 @@ namespace TodoBackend.Controllers
             return Ok(itemDTO);
         }
 
+        // GET: TodoItems/daily
+        [HttpGet]
+        [Route("daily")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetAllDailyTodosTitle()
+        {
+            var getAll = await _todoDBContext.todoItems.Where(_ => _.IsTodayTodo == true).ToListAsync();
+
+            if (getAll.Count == 0) return NotFound("No Todo's Found");
+
+            var itemDTO = _mapper.Map<List<TodoItemDTO>>(getAll);
+
+            return Ok(itemDTO);
+        }
+        
         // GET: TodoItems/:id
         [HttpGet("{id:int}")]
         [ProducesResponseType(200)]
@@ -86,8 +104,9 @@ namespace TodoBackend.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             TodoItem todoItem = _mapper.Map<TodoItem>(todoItemDTO);
+            todoItem.ListId = null;
 
-            await _todoDBContext.AddAsync(todoItem);
+            await _todoDBContext.todoItems.AddAsync(todoItem);
             await _todoDBContext.SaveChangesAsync();
             return Created();
         }

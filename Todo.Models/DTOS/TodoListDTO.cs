@@ -12,7 +12,6 @@ namespace Todo.Models.DTOS
         public int Id { get; set; }
         [Required]
         public string ListName { get; set; }
-        public List<TodoItemShortDTO> Items { get; set; }
     }
 
 }
